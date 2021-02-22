@@ -12,17 +12,20 @@ import 'package:flutter/material.dart';
 import '../../domain/folder_of_scenes/folder_of_scene.dart';
 import '../../infrastructure/core/gen/smart_device/smart_blinds_object.dart';
 import '../../infrastructure/core/gen/smart_device/smart_room_object.dart';
+import '../add_user_to_home/add_user_to_home_page.dart';
 import '../home_page/home_page.dart';
 import '../home_page/tabs/smart_devices_tab/blinds/blinds_page.dart';
 import '../home_page/tabs/smart_devices_tab/blinds/smart_blind_widget.dart';
 import '../initialize_home/initialize_home_page.dart';
 import '../introduction_screen/introduction_screen_page.dart';
+import '../join_home_by_id/join_home_by_id_page.dart';
 import '../lights/lights_in_the_room/lights_in_the_room_page.dart';
 import '../lights/rooms_lights_page.dart';
+import '../manage_users/manage_users_page.dart';
 import '../scenes/scenes_page.dart';
 import '../sign_in_page/sign_in_page.dart';
 import '../splash/splash_page.dart';
-import '../where_to_login_page/where_to_login_page_minimal.dart';
+import '../where_to_login_page/where_to_login_page_minimal/where_to_login_page_minimal_page.dart';
 import '../where_to_login_page/where_to_login_page_offline.dart';
 
 class Routes {
@@ -30,9 +33,13 @@ class Routes {
   static const String introductionScreenPage = '/introduction-screen-page';
   static const String signInPage = '/sign-in-page';
   static const String initializeHomePage = '/initialize-home-page';
-  static const String whereToLoginPageMinimal = '/where-to-login-page-minimal';
+  static const String whereToLoginPageMinimalPage =
+      '/where-to-login-page-minimal-page';
   static const String whereToLoginPageOffline = '/where-to-login-page-offline';
+  static const String joinHomeByIdPage = '/join-home-by-id-page';
   static const String homePage = '/home-page';
+  static const String manageUsersPage = '/manage-users-page';
+  static const String addUserToHomePage = '/add-user-to-home-page';
   static const String scenesPage = '/scenes-page';
   static const String roomsLightsPage = '/rooms-lights-page';
   static const String lightsInTheRoomPage = '/lights-in-the-room-page';
@@ -43,9 +50,12 @@ class Routes {
     introductionScreenPage,
     signInPage,
     initializeHomePage,
-    whereToLoginPageMinimal,
+    whereToLoginPageMinimalPage,
     whereToLoginPageOffline,
+    joinHomeByIdPage,
     homePage,
+    manageUsersPage,
+    addUserToHomePage,
     scenesPage,
     roomsLightsPage,
     lightsInTheRoomPage,
@@ -62,9 +72,13 @@ class AppRouter extends RouterBase {
     RouteDef(Routes.introductionScreenPage, page: IntroductionScreenPage),
     RouteDef(Routes.signInPage, page: SignInPage),
     RouteDef(Routes.initializeHomePage, page: InitializeHomePage),
-    RouteDef(Routes.whereToLoginPageMinimal, page: WhereToLoginPageMinimal),
+    RouteDef(Routes.whereToLoginPageMinimalPage,
+        page: WhereToLoginPageMinimalPage),
     RouteDef(Routes.whereToLoginPageOffline, page: WhereToLoginPageOffline),
+    RouteDef(Routes.joinHomeByIdPage, page: JoinHomeByIdPage),
     RouteDef(Routes.homePage, page: HomePage),
+    RouteDef(Routes.manageUsersPage, page: ManageUsersPage),
+    RouteDef(Routes.addUserToHomePage, page: AddUserToHomePage),
     RouteDef(Routes.scenesPage, page: ScenesPage),
     RouteDef(Routes.roomsLightsPage, page: RoomsLightsPage),
     RouteDef(Routes.lightsInTheRoomPage, page: LightsInTheRoomPage),
@@ -98,9 +112,9 @@ class AppRouter extends RouterBase {
         settings: data,
       );
     },
-    WhereToLoginPageMinimal: (data) {
+    WhereToLoginPageMinimalPage: (data) {
       return MaterialPageRoute<dynamic>(
-        builder: (context) => WhereToLoginPageMinimal(),
+        builder: (context) => WhereToLoginPageMinimalPage(),
         settings: data,
       );
     },
@@ -110,9 +124,27 @@ class AppRouter extends RouterBase {
         settings: data,
       );
     },
+    JoinHomeByIdPage: (data) {
+      return MaterialPageRoute<dynamic>(
+        builder: (context) => JoinHomeByIdPage(),
+        settings: data,
+      );
+    },
     HomePage: (data) {
       return MaterialPageRoute<dynamic>(
         builder: (context) => HomePage(),
+        settings: data,
+      );
+    },
+    ManageUsersPage: (data) {
+      return MaterialPageRoute<dynamic>(
+        builder: (context) => ManageUsersPage(),
+        settings: data,
+      );
+    },
+    AddUserToHomePage: (data) {
+      return MaterialPageRoute<dynamic>(
+        builder: (context) => AddUserToHomePage(),
         settings: data,
       );
     },
@@ -169,13 +201,22 @@ extension AppRouterExtendedNavigatorStateX on ExtendedNavigatorState {
   Future<dynamic> pushInitializeHomePage() =>
       push<dynamic>(Routes.initializeHomePage);
 
-  Future<dynamic> pushWhereToLoginPageMinimal() =>
-      push<dynamic>(Routes.whereToLoginPageMinimal);
+  Future<dynamic> pushWhereToLoginPageMinimalPage() =>
+      push<dynamic>(Routes.whereToLoginPageMinimalPage);
 
   Future<dynamic> pushWhereToLoginPageOffline() =>
       push<dynamic>(Routes.whereToLoginPageOffline);
 
+  Future<dynamic> pushJoinHomeByIdPage() =>
+      push<dynamic>(Routes.joinHomeByIdPage);
+
   Future<dynamic> pushHomePage() => push<dynamic>(Routes.homePage);
+
+  Future<dynamic> pushManageUsersPage() =>
+      push<dynamic>(Routes.manageUsersPage);
+
+  Future<dynamic> pushAddUserToHomePage() =>
+      push<dynamic>(Routes.addUserToHomePage);
 
   Future<dynamic> pushScenesPage({
     @required FolderOfScenes folderOfScenes,

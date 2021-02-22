@@ -32,7 +32,9 @@ dependencies:
   auto_route: ^0.6.9
   # Helps implement the BLoC pattern.
   bloc: ^6.1.1
-  # Copy text to clipboard in both
+  # Copy text from and to clipboard
+  clipboard: ^0.1.2+8
+  # Copy text to clipboard
   clipboard_manager: ^0.0.4
   cloud_firestore: ^0.16.0
   # Allow discover network connectivity
@@ -75,6 +77,7 @@ dependencies:
   grpc: ^2.9.0
   # Lightweight and blazing fast key-value database
   hive: ^1.4.4+1
+  hive_flutter: ^0.3.1
   # A composable, multi-platform, Future-based API for HTTP requests.
   http: ^0.12.2
   # Convenient code generator for get_it
@@ -120,6 +123,7 @@ dev_dependencies:
     sdk: flutter
   # Code generator for unions/pattern-matching/copy.
   freezed: ^0.12.7
+  hive_generator: ^0.8.2
   injectable_generator: ^1.0.7
   # Collection of lint rules for Dart and Flutter projects.
   lint: ^1.4.0-dev.d210.1

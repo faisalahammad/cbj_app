@@ -1,10 +1,10 @@
 import 'package:cybear_jinni/domain/devices/device_entity.dart';
 import 'package:flutter/material.dart';
 
-class ErrorNoteCard extends StatelessWidget {
+class ErrorDeviceCard extends StatelessWidget {
   final DeviceEntity device;
 
-  const ErrorNoteCard({
+  const ErrorDeviceCard({
     Key key,
     @required this.device,
   }) : super(key: key);

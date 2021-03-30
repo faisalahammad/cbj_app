@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cybear_jinni/domain/auth/i_auth_facade.dart';
 import 'package:cybear_jinni/domain/core/errors.dart';
+import 'package:cybear_jinni/domain/create_home/i_create_home_repository.dart';
+import 'package:cybear_jinni/domain/user/user_entity.dart';
 import 'package:cybear_jinni/infrastructure/core/constant_credentials.dart';
 import 'package:cybear_jinni/infrastructure/core/gen/smart_device/client/protoc_as_dart/smart_connection.pbgrpc.dart';
 import 'package:cybear_jinni/infrastructure/core/gen/smart_device/smart_device_object.dart';
@@ -9,35 +11,71 @@ import 'package:cybear_jinni/injection.dart';
 import 'package:grpc/grpc.dart';
 
 class SmartClient {
-  static Future<ResponseStream<SmartDevice>> getAllDevices(
-      String deviceIp) async {
-    final ClientChannel channel = createSmartServerClient(deviceIp);
-    final SmartServerClient stub = SmartServerClient(channel);
-    ResponseStream<SmartDevice> response;
-    try {
-      final SmartDeviceStatus temp = SmartDeviceStatus();
-      temp.onOffState = true;
-      response = stub.getAllDevices(temp);
+  static ClientChannel channel;
+  static SmartServerClient stub;
 
-      print('Greeter client received: ${response.toString()}');
-//      await channel.shutdown();
+  ///  Get comp info
+  ///  getSmartDeviceStatus
+  static Future<CompInfo> getCompInfo(String compIp) async {
+    channel = await createSmartServerClient(compIp);
+    stub = SmartServerClient(channel);
+
+    CompInfo response;
+    try {
+      response = await stub.getCompInfo(CommendStatus()..success = true);
+      print('Greeter client received: ${response.compSpecs.compUuid}');
+      await channel.shutdown();
       return response;
     } catch (e) {
       print('Caught error: $e');
     }
-//    await channel.shutdown();
-    return null;
+    await channel.shutdown();
+    return CompInfo();
   }
 
-  static Future<String> setFirebaseAccountInformationFlutter(
-      SmartDeviceObject smartDeviceObject) async {
-    final ClientChannel channel = createSmartServerClient(smartDeviceObject.ip);
-    final SmartServerClient stub = SmartServerClient(channel);
+  static Future<CommendStatus> compFirstSetup(
+      String compIp, FirstSetupMessage firstSetupMessage) async {
+    channel = await createSmartServerClient(compIp);
+    stub = SmartServerClient(channel);
+
+    CommendStatus response;
+    try {
+      response = await stub.firstSetup(firstSetupMessage);
+      await channel.shutdown();
+      return response;
+    } catch (e) {
+      print('Caught error: $e');
+    }
+    await channel.shutdown();
+    return CommendStatus(success: false);
+  }
+
+  static Future<CommendStatus> setCompInfo(
+      String compIp, CompInfo compInfo) async {
+    channel = await createSmartServerClient(compIp);
+    stub = SmartServerClient(channel);
+
+    CommendStatus response;
+    try {
+      response = await stub.setCompInfo(compInfo);
+      await channel.shutdown();
+      return response;
+    } catch (e) {
+      print('Caught error: $e');
+    }
+    await channel.shutdown();
+    return CommendStatus(success: false);
+  }
+
+  static Future<CommendStatus> setFirebaseAccountInformationFlutter(
+      String lastKnownIp, UserEntity smartDeviceUser) async {
+    channel = await createSmartServerClient(lastKnownIp);
+    stub = SmartServerClient(channel);
 
     final String fireBaseProjectId = ConstantCredentials.fireBaseProjectId;
     final String fireBaseApiKey = ConstantCredentials.fireBaseApiKey;
-    final String userEmail = ConstantCredentials.userEmail;
-    final String userPassword = ConstantCredentials.userPassword;
+    final String userEmail = smartDeviceUser.email.getOrCrash();
+    final String userPassword = smartDeviceUser.pass.getOrCrash();
     final String homeId = (await getIt<IAuthFacade>().getCurrentHome())
         .getOrElse(() => throw MissingCurrentHomeError())
         .id
@@ -55,23 +93,23 @@ class SmartClient {
       print(
           'Firebase account information client received: ${response.success}');
       await channel.shutdown();
-      return response.success.toString();
+      return response;
     } catch (e) {
       print('Caught error: $e');
     }
     await channel.shutdown();
-    return 'error';
+    return CommendStatus()..success = false;
   }
 
   ///  Get the status of smart device
   static Future<String> getSmartDeviceStatus(
       SmartDeviceObject smartDeviceObject) async {
-    final ClientChannel channel = createSmartServerClient(smartDeviceObject.ip);
-    final SmartServerClient stub = SmartServerClient(channel);
+    channel = await createSmartServerClient(smartDeviceObject.ip);
+    stub = SmartServerClient(channel);
     SmartDeviceStatus response;
     try {
       response =
-          await stub.getStatus(SmartDevice()..id = smartDeviceObject.name);
+          await stub.getStatus(SmartDeviceInfo()..id = smartDeviceObject.name);
       print('Greeter client received: ${response.onOffState}');
       await channel.shutdown();
       return response.onOffState.toString();
@@ -84,15 +122,20 @@ class SmartClient {
 
   static Future<String> updateDeviceName(
       SmartDeviceObject smartDeviceObject, String newName) async {
-    setFirebaseAccountInformationFlutter(smartDeviceObject);
+    final UserEntity deviceUser =
+        (await getIt<ICreateHomeRepository>().getDeviceUserFromHome())
+            .getOrElse(() => throw "Device user can't be found");
 
-    final ClientChannel channel = createSmartServerClient(smartDeviceObject.ip);
-    final SmartServerClient stub = SmartServerClient(channel);
+    await setFirebaseAccountInformationFlutter(
+        smartDeviceObject.ip, deviceUser);
+
+    channel = await createSmartServerClient(smartDeviceObject.ip);
+    stub = SmartServerClient(channel);
     CommendStatus response;
     try {
       final SmartDeviceUpdateDetails smartDeviceUpdateDetails =
           SmartDeviceUpdateDetails();
-      smartDeviceUpdateDetails.smartDevice = SmartDevice()
+      smartDeviceUpdateDetails.smartDevice = SmartDeviceInfo()
         ..id = smartDeviceObject.name;
       smartDeviceUpdateDetails.newName = newName;
       response = await stub.updateDeviceName(smartDeviceUpdateDetails);
@@ -108,12 +151,12 @@ class SmartClient {
   ///  Turn smart device on
   static Future<String> setSmartDeviceOn(
       SmartDeviceObject smartDeviceObject) async {
-    final ClientChannel channel = createSmartServerClient(smartDeviceObject.ip);
-    final SmartServerClient stub = SmartServerClient(channel);
+    channel = await createSmartServerClient(smartDeviceObject.ip);
+    stub = SmartServerClient(channel);
     CommendStatus response;
     try {
-      response =
-          await stub.setOnDevice(SmartDevice()..id = smartDeviceObject.name);
+      response = await stub
+          .setOnDevice(SmartDeviceInfo()..id = smartDeviceObject.name);
       print('Greeter client received: ${response.success}');
       await channel.shutdown();
       return response.success.toString();
@@ -127,12 +170,12 @@ class SmartClient {
   ///  Turn smart device off
   static Future<String> setSmartDeviceOff(
       SmartDeviceObject smartDeviceObject) async {
-    final ClientChannel channel = createSmartServerClient(smartDeviceObject.ip);
-    final SmartServerClient stub = SmartServerClient(channel);
+    channel = await createSmartServerClient(smartDeviceObject.ip);
+    stub = SmartServerClient(channel);
     CommendStatus response;
     try {
-      response =
-          await stub.setOffDevice(SmartDevice()..id = smartDeviceObject.name);
+      response = await stub
+          .setOffDevice(SmartDeviceInfo()..id = smartDeviceObject.name);
       print('Greeter client received: ${response.success}');
       await channel.shutdown();
       return response.success.toString();
@@ -148,12 +191,12 @@ class SmartClient {
   ///  Turn smart blinds up
   static Future<String> setSmartBlindsUp(
       SmartDeviceObject smartDeviceObject) async {
-    final ClientChannel channel = createSmartServerClient(smartDeviceObject.ip);
-    final SmartServerClient stub = SmartServerClient(channel);
+    channel = await createSmartServerClient(smartDeviceObject.ip);
+    stub = SmartServerClient(channel);
     CommendStatus response;
     try {
-      response =
-          await stub.setBlindsUp(SmartDevice()..id = smartDeviceObject.name);
+      response = await stub
+          .setBlindsUp(SmartDeviceInfo()..id = smartDeviceObject.name);
       print('Greeter client received: ${response.success}');
       await channel.shutdown();
       return response.success.toString();
@@ -167,12 +210,12 @@ class SmartClient {
   ///  Turn smart blinds down
   static Future<String> setSmartBlindsDown(
       SmartDeviceObject smartDeviceObject) async {
-    final ClientChannel channel = createSmartServerClient(smartDeviceObject.ip);
-    final SmartServerClient stub = SmartServerClient(channel);
+    channel = await createSmartServerClient(smartDeviceObject.ip);
+    stub = SmartServerClient(channel);
     CommendStatus response;
     try {
-      response =
-          await stub.setBlindsDown(SmartDevice()..id = smartDeviceObject.name);
+      response = await stub
+          .setBlindsDown(SmartDeviceInfo()..id = smartDeviceObject.name);
       print('Greeter client received: ${response.success}');
       await channel.shutdown();
       return response.success.toString();
@@ -186,12 +229,12 @@ class SmartClient {
   ///  Stop smart blinds
   static Future<String> setSmartBlindsStop(
       SmartDeviceObject smartDeviceObject) async {
-    final ClientChannel channel = createSmartServerClient(smartDeviceObject.ip);
-    final SmartServerClient stub = SmartServerClient(channel);
+    channel = await createSmartServerClient(smartDeviceObject.ip);
+    stub = SmartServerClient(channel);
     CommendStatus response;
     try {
-      response =
-          await stub.setBlindsStop(SmartDevice()..id = smartDeviceObject.name);
+      response = await stub
+          .setBlindsStop(SmartDeviceInfo()..id = smartDeviceObject.name);
       print('Greeter client received: ${response.success}');
       await channel.shutdown();
       return response.success.toString();
@@ -202,7 +245,8 @@ class SmartClient {
     return 'error';
   }
 
-  static ClientChannel createSmartServerClient(String deviceIp) {
+  static Future<ClientChannel> createSmartServerClient(String deviceIp) async {
+    await channel?.shutdown();
     return ClientChannel(deviceIp,
         port: 50051,
         options:

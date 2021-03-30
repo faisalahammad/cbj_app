@@ -39,9 +39,6 @@ class ManageUsersPage extends StatelessWidget {
           create: (context) => getIt<ManageUsersBloc>()
             ..add(const ManageUsersEvent.initialized()),
         ),
-        // BlocProvider<DeviceActorBloc>(
-        //   create: (context) => getIt<DeviceActorBloc>(),
-        // ),
       ],
       child: MultiBlocListener(
           listeners: [
@@ -54,27 +51,6 @@ class ManageUsersPage extends StatelessWidget {
                 );
               },
             ),
-            //   BlocListener<DeviceActorBloc, DeviceActorState>(
-            //     listener: (context, state) {
-            //       state.maybeMap(
-            //         deleteFailure: (state) {
-            //           FlushbarHelper.createError(
-            //             duration: const Duration(seconds: 5),
-            //             message: 'Error',
-            //             // state.devicesFailure.map(
-            //             //   unexpected: (_) =>
-            //             //       'Unexpected error occured while deleting,' +
-            //             //       'please contact support.',
-            //             //   insufficientPermission: (_) =>
-            //             //       'Insufficient permissions ❌',
-            //             //   unableToUpdate: (_) => 'Impossible error',
-            //             // ),
-            //           ).show(context);
-            //         },
-            //         orElse: () {},
-            //       );
-            //     },
-            //   ),
           ],
           child: Scaffold(
             body: Container(

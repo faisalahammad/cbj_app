@@ -30,11 +30,13 @@ class DeviceWatcherBloc extends Bloc<DeviceWatcherEvent, DeviceWatcherState> {
       watchAllStarted: (e) async* {
         yield const DeviceWatcherState.loadInProgress();
         await _deviceStreamSubscription?.cancel();
-        yield* _deviceRepository.watchAll().map(
-              (failureOrDevices) => failureOrDevices.fold(
-                  (f) => DeviceWatcherState.loadFailure(f),
-                  (devices) => DeviceWatcherState.loadSuccess(devices)),
-            );
+        _deviceStreamSubscription = _deviceRepository.watchAll().listen(
+            (eventWatch) =>
+                add(DeviceWatcherEvent.devicesReceived(eventWatch)));
+      },
+      devicesReceived: (e) async* {
+        yield e.failureOrDevices.fold((f) => DeviceWatcherState.loadFailure(f),
+            (d) => DeviceWatcherState.loadSuccess(d));
       },
     );
   }

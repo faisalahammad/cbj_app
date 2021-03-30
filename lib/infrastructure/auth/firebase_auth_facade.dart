@@ -34,34 +34,50 @@ class FirebaseAuthFacade implements IAuthFacade {
       id: UniqueId.fromUniqueString(await HiveLocalDbHelper.getHomeId())));
 
   @override
-  Future<Either<AuthFailure, Unit>> registerWithEmailAndPassword(
-      {@required EmailAddress emailAddress,
-      @required Password password}) async {
+  Future<Either<AuthFailure, Unit>> registerWithEmailAndPassword({
+    @required EmailAddress emailAddress,
+    @required Password password,
+  }) async {
+    final Either<AuthFailure, MUser>
+        registerWithEmailAndPasswordReturnUserIdOutput =
+        await registerWithEmailAndPasswordReturnUserId(
+            emailAddress: emailAddress, password: password);
+
+    return registerWithEmailAndPasswordReturnUserIdOutput.fold(
+      (l) => left(const AuthFailure.emailAlreadyInUse()),
+      (r) => right(unit),
+    );
+  }
+
+  @override
+  Future<Either<AuthFailure, MUser>> registerWithEmailAndPasswordReturnUserId(
+      {EmailAddress emailAddress, Password password}) async {
     final emailAddressStr = emailAddress.getOrCrash();
     final passwordStr = password.getOrCrash();
 
     try {
-      await _firebaseAuth.createUserWithEmailAndPassword(
-          email: emailAddressStr, password: passwordStr);
+      final UserCredential userCredential =
+          await _firebaseAuth.createUserWithEmailAndPassword(
+              email: emailAddressStr, password: passwordStr);
 
-      MUser mUser = (await getSignedInUser())
-          .getOrElse(() => throw NotAuthenticatedError());
-      String userId = mUser.id.getOrCrash();
+      final String userIdString = userCredential.user.uid;
 
       final String userName =
           emailAddressStr.substring(0, emailAddressStr.indexOf('@'));
 
-      UserEntity userEntity = UserEntity(
-        id: UserUniqueId.fromUniqueString(userId),
+      final UserEntity userEntity = UserEntity(
+        id: UserUniqueId.fromUniqueString(userIdString),
         email: UserEmail(emailAddressStr),
         name: UserName(userName),
         firstName: UserFirstName(' '),
         lastName: UserLastName(' '),
       );
 
-      await getIt<IUserRepository>().create(userEntity);
+      final registrarOutput = await getIt<IUserRepository>().create(userEntity);
+      registrarOutput.getOrElse(() => throw NotAuthenticatedError());
 
-      return right(unit);
+      final MUser mUser = MUser(id: UniqueId.fromUniqueString(userIdString));
+      return right(mUser);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
         return left(const AuthFailure.emailAlreadyInUse());

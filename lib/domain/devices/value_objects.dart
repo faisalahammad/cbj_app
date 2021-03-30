@@ -179,3 +179,32 @@ class DeviceType extends DevicesValueObjectAbstract<String> {
 
   const DeviceType._(this.value);
 }
+
+class DeviceCompUuid extends DevicesValueObjectAbstract<String> {
+  @override
+  final Either<DevicesFailure<String>, String> value;
+
+  factory DeviceCompUuid(String input) {
+    assert(input != null);
+    return DeviceCompUuid._(
+      validateDeviceNotEmpty(input),
+    );
+  }
+
+  const DeviceCompUuid._(this.value);
+}
+
+class DeviceLastKnownIp extends DevicesValueObjectAbstract<String> {
+  @override
+  final Either<DevicesFailure<String>, String> value;
+
+  factory DeviceLastKnownIp(String input) {
+    assert(input != null);
+    return DeviceLastKnownIp._(
+      validateDeviceNotEmpty(input)
+          .flatMap((a) => validateDeviceTypeExist(input)),
+    );
+  }
+
+  const DeviceLastKnownIp._(this.value);
+}

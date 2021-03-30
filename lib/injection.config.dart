@@ -13,6 +13,11 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'application/add_user_to_home/add_user_to_home_bloc.dart';
 import 'infrastructure/add_user_to_home/add_user_to_home_reposityory.dart';
 import 'application/auth/auth_bloc.dart';
+import 'application/cbj_comp/cbj_comp_bloc.dart';
+import 'infrastructure/cbj_comp/cbj_comp_repository.dart';
+import 'application/configure_new_cbj_comp/configure_new_cbj_comp_bloc.dart';
+import 'application/create_home/create_home_bloc.dart';
+import 'infrastructure/create_home/create_home_repository.dart';
 import 'application/devices/device_actor/device_actor_bloc.dart';
 import 'infrastructure/device/device_repository.dart';
 import 'application/devices/device_watcher/device_watcher_bloc.dart';
@@ -25,18 +30,21 @@ import 'infrastructure/folders_of_scenes/folders_of_scenes_repository.dart';
 import 'infrastructure/home_user/home_user_repository.dart';
 import 'domain/add_user_to_home/i_add_user_to_home_repository.dart';
 import 'domain/auth/i_auth_facade.dart';
+import 'domain/cbj_comp/i_cbj_comp_repository.dart';
+import 'domain/create_home/i_create_home_repository.dart';
 import 'domain/devices/i_device_repository.dart';
 import 'domain/folder_of_scenes/i_folder_of_scenes_repository.dart';
 import 'domain/folders_of_scenes/i_folders_of_scenes_repository.dart';
 import 'domain/home_user/i_home_user_repository.dart';
-import 'domain/initialize_home/i_initialize_home_repository.dart';
+import 'domain/manage_network/i_manage_network_repository.dart';
 import 'domain/scene/i_scene_repository.dart';
 import 'domain/user/i_user_repository.dart';
-import 'application/initialize_home/initialize_home_bloc.dart';
-import 'infrastructure/initialize_home/initialize_home_repository.dart';
 import 'application/join_home_by_id/join_home_by_id_bloc.dart';
 import 'application/light_toggle/light_toggle_bloc.dart';
+import 'application/manage_access_point/manage_access_point_bloc.dart';
 import 'application/manage_users/manage_users_bloc.dart';
+import 'infrastructure/manage_wifi/manage_wifi_repository.dart';
+import 'application/manage_wifi/manage_wifi_bloc.dart';
 import 'infrastructure/mock_example.dart';
 import 'application/scene/scene_bloc.dart';
 import 'infrastructure/scenes/scene_repository.dart';
@@ -61,6 +69,9 @@ GetIt $initGetIt(
       () => AddUserToHomeRepository(get<FirebaseFirestore>()));
   gh.lazySingleton<IAuthFacade>(
       () => FirebaseAuthFacade(get<FirebaseAuth>(), get<GoogleSignIn>()));
+  gh.lazySingleton<ICBJCompRepository>(() => CBJCompRepository());
+  gh.lazySingleton<ICreateHomeRepository>(() =>
+      CreateHomeRepository(get<FirebaseFirestore>(), get<FirebaseAuth>()));
   gh.lazySingleton<IDeviceRepository>(
       () => DeviceRepository(get<FirebaseFirestore>()));
   gh.lazySingleton<IFolderOfScenesRepository>(() => FolderOfScenesRepository());
@@ -68,17 +79,18 @@ GetIt $initGetIt(
       () => FoldersOfScenesRepository());
   gh.lazySingleton<IHomeUserRepository>(
       () => HomeUserRepository(get<FirebaseFirestore>()));
-  gh.lazySingleton<IInitializeHomeRepository>(() =>
-      InitializeHomeRepository(get<FirebaseFirestore>(), get<FirebaseAuth>()));
+  gh.lazySingleton<IManageNetworkRepository>(() => ManageWiFiRepository());
   gh.lazySingleton<ISceneRepository>(() => SceneRepository());
   gh.lazySingleton<IUserRepository>(
       () => UserRepository(get<FirebaseFirestore>()));
-  gh.factory<InitializeHomeBloc>(
-      () => InitializeHomeBloc(get<IInitializeHomeRepository>()));
   gh.factory<JoinHomeByIdBloc>(() => JoinHomeByIdBloc(get<IUserRepository>()));
   gh.factory<LightToggleBloc>(() => LightToggleBloc(get<IDeviceRepository>()));
+  gh.factory<ManageAccessPointBloc>(
+      () => ManageAccessPointBloc(get<IManageNetworkRepository>()));
   gh.factory<ManageUsersBloc>(
       () => ManageUsersBloc(get<IHomeUserRepository>()));
+  gh.factory<ManageWifiBloc>(
+      () => ManageWifiBloc(get<IManageNetworkRepository>()));
   gh.factory<MockExample>(() => MockExample());
   gh.factory<SceneBloc>(() => SceneBloc(get<ISceneRepository>()));
   gh.factory<SignInFormBloc>(() => SignInFormBloc(get<IAuthFacade>()));
@@ -87,6 +99,11 @@ GetIt $initGetIt(
   gh.factory<AddUserToHomeBloc>(
       () => AddUserToHomeBloc(get<IAddUserToHomeRepository>()));
   gh.factory<AuthBloc>(() => AuthBloc(get<IAuthFacade>()));
+  gh.factory<CBJCompBloc>(() => CBJCompBloc(get<ICBJCompRepository>()));
+  gh.factory<ConfigureNewCbjCompBloc>(() => ConfigureNewCbjCompBloc(
+      get<IDeviceRepository>(), get<ICBJCompRepository>()));
+  gh.factory<CreateHomeBloc>(
+      () => CreateHomeBloc(get<ICreateHomeRepository>()));
   gh.factory<DeviceActorBloc>(() => DeviceActorBloc(get<IDeviceRepository>()));
   gh.factory<DeviceWatcherBloc>(
       () => DeviceWatcherBloc(get<IDeviceRepository>()));

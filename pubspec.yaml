@@ -53,6 +53,7 @@ dependencies:
   # Plugin to use the Google Analytics for Firebase API.
   firebase_analytics: ^7.0.1
   firebase_auth: ^0.20.0+1
+  firebase_auth_web: ^0.3.3
   firebase_core: ^0.7.0
   flushbar: ^1.10.4
   flutter:
@@ -66,9 +67,9 @@ dependencies:
   # An easy to implement custom switch
   flutter_switch: ^0.2.0
   fluttertoast: ^7.1.6
-  # Annotations for freezed
-  freezed_annotation:
   font_awesome_flutter: ^8.11.0
+  # Annotations for freezed
+  freezed_annotation: ^0.12.0
   # Service locator
   get_it: ^5.0.6
   # Secure authentication system for signing in with a Google account on Android and iOS
@@ -90,6 +91,8 @@ dependencies:
   introduction_screen: ^1.0.9
   # Port of Kotlin's Kotlin Standard library for Dart/Flutter projects
   kt_dart: ^0.8.0
+  # Liquid progress indicator for Flutter.
+  liquid_progress_indicator: ^0.3.2
   # Finding commonly used locations on the filesystem
   path_provider: ^1.6.27
   # Popup that ask for the requested permission
@@ -107,9 +110,12 @@ dependencies:
   # Simple, fast generation of RFC4122 UUIDs.
   uuid: ^2.2.2
   # Information about a device's connection to wifi
-  wifi_info_flutter: ^1.0.3
+  wifi_info_flutter: ^1.0.4
   # Get available wifi ssid list, user can connect to wifi with ssid and password, and create hotspot
-  wifi_iot: ^0.2.0
+  wifi_iot: ^0.2.2
+
+dependency_overrides:
+  intl: ^0.17.0-nullsafety.2
 
 dev_dependencies:
   # Generator for auto_route library.

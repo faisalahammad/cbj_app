@@ -9,14 +9,20 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
+import '../../domain/cbj_comp/cbj_comp_entity.dart';
 import '../../domain/folder_of_scenes/folder_of_scene.dart';
 import '../../infrastructure/core/gen/smart_device/smart_blinds_object.dart';
 import '../../infrastructure/core/gen/smart_device/smart_room_object.dart';
+import '../add_new_devices_process/choose_device_vendor_to_add/choose_device_vendor_to_add_page.dart';
+import '../add_new_devices_process/configure_new_cbj_comp/configure_new_cbj_comp_page.dart';
+import '../add_new_devices_process/connect_to_home_wifi/connect_to_home_wifi_page.dart';
+import '../add_new_devices_process/open_access_point/open_access_pointi_page.dart';
+import '../add_new_devices_process/scan_for_new_cbj_comps/scan_for_new_cbj_comps_page.dart';
 import '../add_user_to_home/add_user_to_home_page.dart';
+import '../create_home/create_home_page.dart';
 import '../home_page/home_page.dart';
 import '../home_page/tabs/smart_devices_tab/blinds/blinds_page.dart';
 import '../home_page/tabs/smart_devices_tab/blinds/smart_blind_widget.dart';
-import '../initialize_home/initialize_home_page.dart';
 import '../introduction_screen/introduction_screen_page.dart';
 import '../join_home_by_id/join_home_by_id_page.dart';
 import '../lights/lights_in_the_room/lights_in_the_room_page.dart';
@@ -32,7 +38,7 @@ class Routes {
   static const String splashPage = '/';
   static const String introductionScreenPage = '/introduction-screen-page';
   static const String signInPage = '/sign-in-page';
-  static const String initializeHomePage = '/initialize-home-page';
+  static const String createHomePage = '/create-home-page';
   static const String whereToLoginPageMinimalPage =
       '/where-to-login-page-minimal-page';
   static const String whereToLoginPageOffline = '/where-to-login-page-offline';
@@ -41,6 +47,12 @@ class Routes {
   static const String manageUsersPage = '/manage-users-page';
   static const String addUserToHomePage = '/add-user-to-home-page';
   static const String scenesPage = '/scenes-page';
+  static const String chooseDeviceVendorToAddPage =
+      '/choose-device-vendor-to-add-page';
+  static const String connectToHomeWifiPage = '/connect-to-home-wifi-page';
+  static const String openAccessPointPage = '/open-access-point-page';
+  static const String scanForNewCBJCompsPage = '/scan-for-new-cb-jcomps-page';
+  static const String configureNewCbjCompPage = '/configure-new-cbj-comp-page';
   static const String roomsLightsPage = '/rooms-lights-page';
   static const String lightsInTheRoomPage = '/lights-in-the-room-page';
   static const String blindsPage = '/blinds-page';
@@ -49,7 +61,7 @@ class Routes {
     splashPage,
     introductionScreenPage,
     signInPage,
-    initializeHomePage,
+    createHomePage,
     whereToLoginPageMinimalPage,
     whereToLoginPageOffline,
     joinHomeByIdPage,
@@ -57,6 +69,11 @@ class Routes {
     manageUsersPage,
     addUserToHomePage,
     scenesPage,
+    chooseDeviceVendorToAddPage,
+    connectToHomeWifiPage,
+    openAccessPointPage,
+    scanForNewCBJCompsPage,
+    configureNewCbjCompPage,
     roomsLightsPage,
     lightsInTheRoomPage,
     blindsPage,
@@ -71,7 +88,7 @@ class AppRouter extends RouterBase {
     RouteDef(Routes.splashPage, page: SplashPage),
     RouteDef(Routes.introductionScreenPage, page: IntroductionScreenPage),
     RouteDef(Routes.signInPage, page: SignInPage),
-    RouteDef(Routes.initializeHomePage, page: InitializeHomePage),
+    RouteDef(Routes.createHomePage, page: CreateHomePage),
     RouteDef(Routes.whereToLoginPageMinimalPage,
         page: WhereToLoginPageMinimalPage),
     RouteDef(Routes.whereToLoginPageOffline, page: WhereToLoginPageOffline),
@@ -80,6 +97,12 @@ class AppRouter extends RouterBase {
     RouteDef(Routes.manageUsersPage, page: ManageUsersPage),
     RouteDef(Routes.addUserToHomePage, page: AddUserToHomePage),
     RouteDef(Routes.scenesPage, page: ScenesPage),
+    RouteDef(Routes.chooseDeviceVendorToAddPage,
+        page: ChooseDeviceVendorToAddPage),
+    RouteDef(Routes.connectToHomeWifiPage, page: ConnectToHomeWifiPage),
+    RouteDef(Routes.openAccessPointPage, page: OpenAccessPointPage),
+    RouteDef(Routes.scanForNewCBJCompsPage, page: ScanForNewCBJCompsPage),
+    RouteDef(Routes.configureNewCbjCompPage, page: ConfigureNewCbjCompPage),
     RouteDef(Routes.roomsLightsPage, page: RoomsLightsPage),
     RouteDef(Routes.lightsInTheRoomPage, page: LightsInTheRoomPage),
     RouteDef(Routes.blindsPage, page: BlindsPage),
@@ -106,9 +129,9 @@ class AppRouter extends RouterBase {
         settings: data,
       );
     },
-    InitializeHomePage: (data) {
+    CreateHomePage: (data) {
       return MaterialPageRoute<dynamic>(
-        builder: (context) => InitializeHomePage(),
+        builder: (context) => CreateHomePage(),
         settings: data,
       );
     },
@@ -155,6 +178,39 @@ class AppRouter extends RouterBase {
         settings: data,
       );
     },
+    ChooseDeviceVendorToAddPage: (data) {
+      return MaterialPageRoute<dynamic>(
+        builder: (context) => ChooseDeviceVendorToAddPage(),
+        settings: data,
+      );
+    },
+    ConnectToHomeWifiPage: (data) {
+      return MaterialPageRoute<dynamic>(
+        builder: (context) => ConnectToHomeWifiPage(),
+        settings: data,
+      );
+    },
+    OpenAccessPointPage: (data) {
+      return MaterialPageRoute<dynamic>(
+        builder: (context) => OpenAccessPointPage(),
+        settings: data,
+      );
+    },
+    ScanForNewCBJCompsPage: (data) {
+      return MaterialPageRoute<dynamic>(
+        builder: (context) => ScanForNewCBJCompsPage(),
+        settings: data,
+      );
+    },
+    ConfigureNewCbjCompPage: (data) {
+      final args =
+          data.getArgs<ConfigureNewCbjCompPageArguments>(nullOk: false);
+      return MaterialPageRoute<dynamic>(
+        builder: (context) =>
+            ConfigureNewCbjCompPage(cbjCompEntity: args.cbjCompEntity),
+        settings: data,
+      );
+    },
     RoomsLightsPage: (data) {
       return MaterialPageRoute<dynamic>(
         builder: (context) => RoomsLightsPage(),
@@ -198,8 +254,7 @@ extension AppRouterExtendedNavigatorStateX on ExtendedNavigatorState {
 
   Future<dynamic> pushSignInPage() => push<dynamic>(Routes.signInPage);
 
-  Future<dynamic> pushInitializeHomePage() =>
-      push<dynamic>(Routes.initializeHomePage);
+  Future<dynamic> pushCreateHomePage() => push<dynamic>(Routes.createHomePage);
 
   Future<dynamic> pushWhereToLoginPageMinimalPage() =>
       push<dynamic>(Routes.whereToLoginPageMinimalPage);
@@ -224,6 +279,27 @@ extension AppRouterExtendedNavigatorStateX on ExtendedNavigatorState {
       push<dynamic>(
         Routes.scenesPage,
         arguments: ScenesPageArguments(folderOfScenes: folderOfScenes),
+      );
+
+  Future<dynamic> pushChooseDeviceVendorToAddPage() =>
+      push<dynamic>(Routes.chooseDeviceVendorToAddPage);
+
+  Future<dynamic> pushConnectToHomeWifiPage() =>
+      push<dynamic>(Routes.connectToHomeWifiPage);
+
+  Future<dynamic> pushOpenAccessPointPage() =>
+      push<dynamic>(Routes.openAccessPointPage);
+
+  Future<dynamic> pushScanForNewCBJCompsPage() =>
+      push<dynamic>(Routes.scanForNewCBJCompsPage);
+
+  Future<dynamic> pushConfigureNewCbjCompPage({
+    @required CBJCompEntity cbjCompEntity,
+  }) =>
+      push<dynamic>(
+        Routes.configureNewCbjCompPage,
+        arguments:
+            ConfigureNewCbjCompPageArguments(cbjCompEntity: cbjCompEntity),
       );
 
   Future<dynamic> pushRoomsLightsPage() =>
@@ -257,6 +333,12 @@ extension AppRouterExtendedNavigatorStateX on ExtendedNavigatorState {
 class ScenesPageArguments {
   final FolderOfScenes folderOfScenes;
   ScenesPageArguments({@required this.folderOfScenes});
+}
+
+/// ConfigureNewCbjCompPage arguments holder class
+class ConfigureNewCbjCompPageArguments {
+  final CBJCompEntity cbjCompEntity;
+  ConfigureNewCbjCompPageArguments({@required this.cbjCompEntity});
 }
 
 /// LightsInTheRoomPage arguments holder class

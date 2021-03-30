@@ -1,10 +1,21 @@
+import 'dart:io';
+
+import 'package:auto_route/auto_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cybear_jinni/domain/devices/device_entity.dart';
 import 'package:cybear_jinni/domain/devices/devices_failures.dart';
 import 'package:cybear_jinni/domain/devices/i_device_repository.dart';
+import 'package:cybear_jinni/domain/devices/value_objects.dart';
+import 'package:cybear_jinni/domain/user/i_user_repository.dart';
+import 'package:cybear_jinni/domain/user/user_entity.dart';
 import 'package:cybear_jinni/infrastructure/core/firestore_helpers.dart';
+import 'package:cybear_jinni/infrastructure/core/gen/smart_device/client/smart_client.dart';
+import 'package:cybear_jinni/infrastructure/core/gen/smart_device/smart_device_object.dart';
 import 'package:cybear_jinni/infrastructure/device/device_dtos.dart';
+import 'package:cybear_jinni/infrastructure/objects/enums.dart';
+import 'package:cybear_jinni/injection.dart';
 import 'package:dartz/dartz.dart';
+import 'package:device_info/device_info.dart';
 import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:kt_dart/kt.dart';
@@ -51,8 +62,31 @@ class DeviceRepository implements IDeviceRepository {
   @override
   Future<Either<DevicesFailure, Unit>> create(DeviceEntity deviceEntity) async {
     try {
+      String deviceModelString = 'No Model found';
+      final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        print(androidInfo.model);
+        deviceModelString = androidInfo.model;
+      } else if (Platform.isIOS) {
+        final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+        print(iosInfo.utsname.machine);
+        deviceModelString = iosInfo.model;
+      }
+
+      final UserEntity currentUserEntity =
+          (await getIt<IUserRepository>().getCurrentUser())
+              .getOrElse(() => throw 'Cant get current user');
+      final String currentUserId = currentUserEntity.id.getOrCrash();
+
+      final DeviceEntity deviceEntityTemp = deviceEntity.copyWith(
+          stateMassage: DeviceStateMassage('Setting up device'),
+          senderDeviceOs: DeviceSenderDeviceOs(Platform.operatingSystem),
+          senderDeviceModel: DeviceSenderDeviceModel(deviceModelString),
+          senderId: DeviceSenderId.fromUniqueString(currentUserId));
+
       final devicesDoc = await _firestore.currentHomeDocument();
-      final deviceDtos = DeviceDtos.fromDomain(deviceEntity);
+      final deviceDtos = DeviceDtos.fromDomain(deviceEntityTemp);
 
       await devicesDoc.devicesCollecttion
           .doc(deviceDtos.id)
@@ -69,15 +103,15 @@ class DeviceRepository implements IDeviceRepository {
   }
 
   @override
-  Future<Either<DevicesFailure, Unit>> update(DeviceEntity deviceEntity) async {
+  Future<Either<DevicesFailure, Unit>> update({
+    @required DeviceEntity deviceEntity,
+    String forceUpdateLocation = 'R',
+  }) async {
     try {
-      final devicesDoc = await _firestore.currentHomeDocument();
-      final deviceDtos = DeviceDtos.fromDomain(deviceEntity);
-
-      await devicesDoc.devicesCollecttion
-          .doc(deviceDtos.id)
-          .update(deviceDtos.toJson());
-      return right(unit);
+      if (forceUpdateLocation == 'C') {
+        return updateComputer(deviceEntity);
+      }
+      return updateRemoteDB(deviceEntity);
     } on PlatformException catch (e) {
       if (e.message.contains('NOT_FOUND')) {
         return left(const DevicesFailure.unableToUpdate());
@@ -105,6 +139,52 @@ class DeviceRepository implements IDeviceRepository {
         // log.error(e.toString());
         return left(const DevicesFailure.unexpected());
       }
+    }
+  }
+
+  Future<Either<DevicesFailure, Unit>> updateRemoteDB(
+      DeviceEntity deviceEntity) async {
+    try {
+      final devicesDoc = await _firestore.currentHomeDocument();
+      final deviceDtos = DeviceDtos.fromDomain(deviceEntity);
+
+      await devicesDoc.devicesCollecttion
+          .doc(deviceDtos.id)
+          .update(deviceDtos.toJson());
+      return right(unit);
+    } on PlatformException catch (e) {
+      if (e.message.contains('NOT_FOUND')) {
+        return left(const DevicesFailure.unableToUpdate());
+      } else {
+        // log.error(e.toString());
+        return left(const DevicesFailure.unexpected());
+      }
+    }
+  }
+
+  Future<Either<DevicesFailure, Unit>> updateComputer(
+      DeviceEntity deviceEntity) async {
+    try {
+      final String id = deviceEntity.id.getOrCrash();
+      final String lastKnownIp = deviceEntity.lastKnownIp.getOrCrash();
+
+      final SmartDeviceObject smartDeviceObject = SmartDeviceObject(
+        DeviceTypeEnum.Light,
+        id,
+        lastKnownIp,
+      );
+      if (deviceEntity.action.getOrCrash().toLowerCase() == 'on') {
+        final String deviceSuccessStatus =
+            await SmartClient.setSmartDeviceOn(smartDeviceObject);
+      } else {
+        final String deviceSuccessStatus =
+            await SmartClient.setSmartDeviceOff(smartDeviceObject);
+      }
+
+      return right(unit);
+    } catch (e) {
+      print('Probably ip of device was not inserted into the device object');
+      return left(const DevicesFailure.unexpected());
     }
   }
 }
